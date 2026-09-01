@@ -13,7 +13,9 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "better-sqlite3": "^13.0.3", 
+    "@google/genai": "^2.20.0",
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "swagger-ui-express": "^5.0.1"
   },
