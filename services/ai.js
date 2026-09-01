@@ -1,5 +1,26 @@
+const { OPTIONS_COUNT, parseQuizJson } = require('./quizSchema.js');
+
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const DEFAULT_MODEL = 'gemini-3.5-flash';
+
+const QUIZ_RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    questions: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          question: { type: 'STRING' },
+          options: { type: 'ARRAY', items: { type: 'STRING' } },
+          correctAnswer: { type: 'STRING' },
+        },
+        required: ['question', 'options', 'correctAnswer'],
+      },
+    },
+  },
+  required: ['questions'],
+};
 
 function getConfig() {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -22,9 +43,17 @@ function extractText(data) {
     .join('');
 }
 
-async function generateText(prompt) {
+async function generateText(prompt, options = {}) {
   const { apiKey, model } = getConfig();
   const url = `${GEMINI_API_BASE}/${encodeURIComponent(model)}:generateContent`;
+
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+  };
+
+  if (options.generationConfig) {
+    body.generationConfig = options.generationConfig;
+  }
 
   let response;
   try {
@@ -34,9 +63,7 @@ async function generateText(prompt) {
         'Content-Type': 'application/json',
         'x-goog-api-key': apiKey,
       },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
+      body: JSON.stringify(body),
     });
   } catch (err) {
     const error = new Error(`Gemini request failed: ${err.message}`);
@@ -64,12 +91,24 @@ async function generateText(prompt) {
 
 async function generateQuiz({ topic, difficulty, amount }) {
   const prompt = [
-    `Generate ${amount} ${difficulty} questions about ${topic}.`,
-    'Number each question.',
-    'For every question, include the question text and the correct answer.',
+    `Generate a multiple-choice trivia quiz about ${topic}.`,
+    `Difficulty: ${difficulty}.`,
+    `Create exactly ${amount} questions.`,
+    `Each question must have exactly ${OPTIONS_COUNT} distinct options.`,
+    'correctAnswer must be copied exactly from one of the options.',
+    'Return JSON only, with this shape:',
+    '{"questions":[{"question":"...","options":["...","...","...","..."],"correctAnswer":"..."}]}',
   ].join(' ');
 
-  return generateText(prompt);
+  const { model, text } = await generateText(prompt, {
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: QUIZ_RESPONSE_SCHEMA,
+    },
+  });
+
+  const quiz = parseQuizJson(text, amount);
+  return { model, questions: quiz.questions };
 }
 
 module.exports = { generateText, generateQuiz };
