@@ -1,18 +1,29 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Task API",
+    "title": "Task & Intellect API",
     "version": "1.0",
-    "description": "SQLite based CRUD API for tasks"
+    "description": "SQLite based CRUD API for tasks plus an AI-generated quiz."
   },
   "servers": [
     {
       "url": "http://localhost:3000"
     }
   ],
+  "tags": [
+    {
+      "name": "Task API",
+      "description": "Create, read, update and delete tasks stored in SQLite."
+    },
+    {
+      "name": "Intellect API",
+      "description": "Generate a structured multiple-choice quiz through the configured AI provider."
+    }
+  ],
   "paths": {
     "/tasks": {
       "get": {
+        "tags": ["Task API"],
         "summary": "List tasks",
         "operationId": "listTasks",
         "parameters": [
@@ -61,6 +72,7 @@
         }
       },
       "post": {
+        "tags": ["Task API"],
         "summary": "Create a task",
         "operationId": "createTask",
         "requestBody": {
@@ -114,6 +126,7 @@
         }
       ],
       "get": {
+        "tags": ["Task API"],
         "summary": "Get one task",
         "operationId": "getTask",
         "responses": {
@@ -143,6 +156,7 @@
         }
       },
       "put": {
+        "tags": ["Task API"],
         "summary": "Update a task",
         "operationId": "updateTask",
         "requestBody": {
@@ -209,6 +223,7 @@
         }
       },
       "delete": {
+        "tags": ["Task API"],
         "summary": "Delete a task",
         "operationId": "deleteTask",
         "responses": {
@@ -233,6 +248,7 @@
     },
     "/stats": {
       "get": {
+        "tags": ["Task API"],
         "summary": "Task counts",
         "operationId": "getStats",
         "responses": {
@@ -251,6 +267,7 @@
     },
     "/quiz": {
       "post": {
+        "tags": ["Intellect API"],
         "summary": "Generate a quiz",
         "operationId": "createQuiz",
         "description": "Validates topic, difficulty and amount, then asks Gemini to generate a quiz.",
@@ -327,6 +344,7 @@
     },
     "/intellect/question": {
       "get": {
+        "tags": ["Intellect API"],
         "summary": "Generate one API question",
         "operationId": "getIntellectQuestion",
         "description": "Sends a fixed prompt to Gemini and returns the model text. Used to prove the AI provider connection.",
@@ -369,6 +387,7 @@
     },
     "/reset": {
       "post": {
+        "tags": ["Task API"],
         "summary": "Reset to seed data",
         "operationId": "resetTasks",
         "responses": {
